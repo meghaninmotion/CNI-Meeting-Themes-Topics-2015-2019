@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CNI Meeting Themes 2015–2019</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #f5f2ec;
+    --surface:   #ffffff;
+    --border:    rgba(0,0,0,0.08);
+    --text-1:    #1a1814;
+    --text-2:    #5a5550;
+    --text-3:    #8f8b86;
+    --accent:    #1D4E6B;
+    --serif:     'DM Serif Display', Georgia, serif;
+    --sans:      'DM Sans', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:      #141210;
+      --surface: #1e1c18;
+      --border:  rgba(255,255,255,0.07);
+      --text-1:  #f0ece4;
+      --text-2:  #a09b94;
+      --text-3:  #6a6560;
+      --accent:  #7EBDD4;
+    }
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: auto 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    grid-column: 1 / -1;
+    padding: 2rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    font-family: var(--serif);
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+  }
+
+  .header-title em {
+    font-style: italic;
+    color: var(--text-2);
+  }
+
+  .header-meta {
+    font-size: 12px;
+    color: var(--text-3);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Sidebar ── */
+  aside {
+    grid-row: 2;
+    padding: 1.75rem 1.5rem;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    overflow-y: auto;
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    margin-bottom: 0.6rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: opacity 0.15s;
+  }
+  .legend-item:hover { opacity: 0.7; }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .legend-name {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.3;
+  }
+
+  .legend-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+
+  .stat-card .num {
+    font-family: var(--serif);
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--text-1);
+    margin-bottom: 3px;
+  }
+
+  .stat-card .lbl {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-3);
+  }
+
+  /* ── Detail panel ── */
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 80px;
+    transition: all 0.2s;
+  }
+
+  .detail-panel .dp-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  .detail-panel .dp-name {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+
+  .detail-panel .dp-count {
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .detail-panel .dp-bar-wrap {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-panel .dp-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .detail-panel .dp-bar-label {
+    width: 34px;
+    font-size: 10px;
+    color: var(--text-3);
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .detail-panel .dp-bar-bg {
+    flex: 1;
+    height: 5px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .detail-panel .dp-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s;
+  }
+
+  .detail-panel .dp-bar-val {
+    width: 18px;
+    font-size: 10px;
+    color: var(--text-3);
+    text-align: right;
+  }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-3);
+    flex-wrap: wrap;
+  }
+
+  .bc-item {
+    cursor: pointer;
+    color: var(--text-2);
+    transition: color 0.15s;
+  }
+  .bc-item:hover { color: var(--text-1); }
+  .bc-item.active { color: var(--text-1); cursor: default; }
+  .bc-sep { color: var(--text-3); }
+
+  /* ── Main chart area ── */
+  main {
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 1.5rem 2rem 2rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .chart-controls {
+    width: 100%;
+    max-width: 620px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hint {
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.02em;
+  }
+
+  .reset-btn {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--text-2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+  .reset-btn:hover { color: var(--text-1); border-color: var(--text-3); }
+
+  #chart-wrap {
+    width: 100%;
+    max-width: 580px;
+    display: flex;
+    justify-content: center;
+  }
+
+  #chart-wrap svg {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+  }
+
+  /* ── Tooltip ── */
+  #tooltip {
+    position: fixed;
+    pointer-events: none;
+    opacity: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-1);
+    max-width: 200px;
+    z-index: 100;
+    transition: opacity 0.1s;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    line-height: 1.5;
+  }
+
+  #tooltip .tt-count {
+    color: var(--text-3);
+    font-size: 11px;
+  }
+
+  @media (max-width: 680px) {
+    body { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    aside { grid-row: 3; border-right: none; border-top: 1px solid var(--border); flex-direction: row; flex-wrap: wrap; gap: 1rem; }
+    main { grid-row: 2; }
+    header { padding: 1.25rem 1rem 1rem; }
+    .sidebar-section { min-width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 class="header-title">CNI Meeting Themes <em>2015–2019</em></h1>
+  <span class="header-meta">347 sessions · 10 meetings · 5 categories</span>
+</header>
+
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Overview</div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">347</div><div class="lbl">Sessions</div></div>
+      <div class="stat-card"><div class="num">10</div><div class="lbl">Meetings</div></div>
+      <div class="stat-card"><div class="num">19</div><div class="lbl">Themes</div></div>
+      <div class="stat-card"><div class="num">5</div><div class="lbl">Categories</div></div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Categories</div>
+    <div id="legend"></div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Selected</div>
+    <div class="detail-panel" id="detail-panel">
+      <div class="dp-label">Hover or click a segment</div>
+      <div class="dp-name" style="color:var(--text-3);font-style:italic;font-size:0.9rem;">Nothing selected</div>
+    </div>
+  </div>
+</aside>
+
+<main>
+  <div class="chart-controls">
+    <div class="breadcrumb" id="breadcrumb">
+      <span class="bc-item active" data-depth="-1">All themes</span>
+    </div>
+    <button class="reset-btn" id="reset-btn">Reset view</button>
+  </div>
+  <div class="hint">Click any segment to zoom in · outer ring = individual meetings</div>
+  <div id="chart-wrap"></div>
+</main>
+
+<div id="tooltip"></div>
+
+<script>
+const DARK = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+/* ── Palette ── */
+const CATS = [
+  { name: "Preservation & data",       base: DARK?"#1D9E75":"#1D9E75", fills: DARK?["#085041","#0F6E56","#1D9E75","#5DCAA5"]:["#E1F5EE","#9FE1CB","#5DCAA5","#1D9E75"], stroke: "#1D9E75", text: DARK?"#9FE1CB":"#0F6E56" },
+  { name: "Repositories & publishing", base: DARK?"#7F77DD":"#7F77DD", fills: DARK?["#26215C","#3C3489","#534AB7"]:["#EEEDFE","#CECBF6","#AFA9EC"], stroke: "#7F77DD", text: DARK?"#CECBF6":"#534AB7" },
+  { name: "Scholarship & learning",    base: DARK?"#D85A30":"#D85A30", fills: DARK?["#4A1B0C","#712B13","#993C1D"]:["#FAECE7","#F5C4B3","#F0997B"], stroke: "#D85A30", text: DARK?"#F5C4B3":"#993C1D" },
+  { name: "Infrastructure & identity", base: DARK?"#378ADD":"#378ADD", fills: DARK?["#042C53","#0C447C","#185FA5"]:["#E6F1FB","#B5D4F4","#85B7EB"], stroke: "#378ADD", text: DARK?"#B5D4F4":"#185FA5" },
+  { name: "Policy & services",         base: DARK?"#BA7517":"#BA7517", fills: DARK?["#412402","#633806","#854F0B","#BA7517","#EF9F27"]:["#FAEEDA","#FAC775","#EF9F27","#BA7517","#854F0B"], stroke: "#BA7517", text: DARK?"#FAC775":"#854F0B" },
+];
+
+const THEMES_BY_CAT = [
+  ["Digital Preservation","Research Data Mgmt","Digital Libraries","Data Science & AI"],
+  ["Institutional Repos","Scholarly Publishing","Open Access"],
+  ["Digital Scholarship","Teaching & Learning","Diversity & Inclusion"],
+  ["Tech Infrastructure","Identity Infrastructure","Interoperability"],
+  ["Privacy & Security","Funding & Policy","New Services","Accessibility","Organizational"],
+];
+
+const YEAR_SESSIONS = {
+  "Digital Preservation":    {Sp15:10,F15:12,Sp16:4,F16:9,Sp17:9,F17:5,Sp18:5,F18:4,Sp19:9,F19:13},
+  "Research Data Mgmt":      {Sp15:6,F15:7,Sp16:4,F16:4,Sp17:7,F17:5,Sp18:5,F18:3,Sp19:7,F19:11},
+  "Digital Libraries":       {Sp15:5,F15:5,Sp16:3,F16:6,Sp17:3,F17:3,Sp18:3,F18:2,Sp19:4,F19:5},
+  "Data Science & AI":       {Sp15:1,F15:1,Sp16:1,F16:1,Sp17:1,F17:2,Sp18:2,F18:2,Sp19:2,F19:11},
+  "Institutional Repos":     {Sp15:4,F15:3,Sp16:3,F16:4,Sp17:8,F17:3,Sp18:4,F18:3,Sp19:8,F19:4},
+  "Scholarly Publishing":    {Sp15:3,F15:5,Sp16:3,F16:3,Sp17:2,F17:3,Sp18:3,F18:3,Sp19:5,F19:5},
+  "Open Access":             {Sp15:2,F15:4,Sp16:2,F16:1,Sp17:2,F17:1,Sp18:2,F18:1,Sp19:2,F19:4},
+  "Digital Scholarship":     {Sp15:6,F15:5,Sp16:3,F16:4,Sp17:6,F17:3,Sp18:3,F18:2,Sp19:5,F19:5},
+  "Teaching & Learning":     {Sp15:3,F15:2,Sp16:2,F16:1,Sp17:3,F17:2,Sp18:2,F18:1,Sp19:2,F19:1},
+  "Diversity & Inclusion":   {Sp15:0,F15:0,Sp16:0,F16:0,Sp17:0,F17:1,Sp18:1,F18:1,Sp19:2,F19:2},
+  "Tech Infrastructure":     {Sp15:3,F15:2,Sp16:2,F16:2,Sp17:3,F17:2,Sp18:2,F18:2,Sp19:3,F19:4},
+  "Identity Infrastructure": {Sp15:2,F15:1,Sp16:2,F16:1,Sp17:3,F17:1,Sp18:2,F18:1,Sp19:3,F19:2},
+  "Interoperability":        {Sp15:2,F15:3,Sp16:1,F16:2,Sp17:1,F17:1,Sp18:1,F18:1,Sp19:2,F19:3},
+  "Privacy & Security":      {Sp15:1,F15:2,Sp16:1,F16:1,Sp17:2,F17:2,Sp18:2,F18:2,Sp19:4,F19:3},
+  "Funding & Policy":        {Sp15:1,F15:1,Sp16:1,F16:1,Sp17:1,F17:1,Sp18:1,F18:1,Sp19:1,F19:1},
+  "New Services":            {Sp15:3,F15:1,Sp16:1,F16:1,Sp17:2,F17:1,Sp18:1,F18:2,Sp19:5,F19:1},
+  "Accessibility":           {Sp15:1,F15:1,Sp16:1,F16:0,Sp17:1,F17:0,Sp18:0,F18:0,Sp19:1,F19:1},
+  "Organizational":          {Sp15:1,F15:1,Sp16:1,F16:1,Sp17:1,F17:1,Sp18:1,F18:1,Sp19:3,F19:2},
+};
+
+const MEETINGS = ["Sp15","F15","Sp16","F16","Sp17","F17","Sp18","F18","Sp19","F19"];
+const MEETING_LABELS = {Sp15:"Sp '15",F15:"Fa '15",Sp16:"Sp '16",F16:"Fa '16",Sp17:"Sp '17",F17:"Fa '17",Sp18:"Sp '18",F18:"Fa '18",Sp19:"Sp '19",F19:"Fa '19"};
+const MEETING_FULL = {Sp15:"Spring 2015",F15:"Fall 2015",Sp16:"Spring 2016",F16:"Fall 2016",Sp17:"Spring 2017",F17:"Fall 2017",Sp18:"Spring 2018",F18:"Fall 2018",Sp19:"Spring 2019",F19:"Fall 2019"};
+
+/* ── Build legend ── */
+const legendEl = document.getElementById("legend");
+CATS.forEach((cat, ci) => {
+  const total = THEMES_BY_CAT[ci].reduce((s, t) => s + Object.values(YEAR_SESSIONS[t]||{}).reduce((a,b)=>a+b,0), 0);
+  const item = document.createElement("div");
+  item.className = "legend-item";
+  item.innerHTML = `<span class="legend-swatch" style="background:${cat.base}"></span><span class="legend-name">${cat.name}</span><span class="legend-count">${total}</span>`;
+  legendEl.appendChild(item);
+});
+
+/* ── Build hierarchy ── */
+function buildHierarchy() {
+  return {
+    name: "CNI 2015–2019", depth0: true,
+    children: CATS.map((cat, ci) => ({
+      name: cat.name, catIdx: ci,
+      children: THEMES_BY_CAT[ci].map((theme, ti) => ({
+        name: theme, catIdx: ci, themeIdx: ti,
+        children: MEETINGS
+          .map(m => ({ name: MEETING_LABELS[m], meeting: m, catIdx: ci, themeIdx: ti, value: (YEAR_SESSIONS[theme]||{})[m]||0 }))
+          .filter(d => d.value > 0)
+      })).filter(t => t.children.length)
+    }))
+  };
+}
+
+/* ── Chart ── */
+const SIZE = 560;
+const CX = SIZE/2, CY = SIZE/2;
+const RI = 64, R1 = 128, R2 = 230, R3 = 278;
+const STROKE = DARK ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.85)";
+const BG_FILL = DARK ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)";
+const TEXT1 = DARK ? "rgba(240,236,228,0.92)" : "rgba(26,24,20,0.88)";
+const TEXT2 = DARK ? "rgba(160,155,148,0.85)" : "rgba(90,85,80,0.85)";
+
+function getCatFill(ci, depth) {
+  const cat = CATS[ci];
+  const stops = cat.fills;
+  if (depth === 1) return stops[0];
+  if (depth === 2) return stops[Math.min(1, stops.length-1)];
+  return stops[Math.min(2, stops.length-1)];
+}
+function getCatStroke(ci) { return CATS[ci].stroke; }
+function getCatText(ci) { return CATS[ci].text; }
+
+const hierarchy = d3.hierarchy(buildHierarchy()).sum(d => d.value||0);
+const partition = d3.partition().size([2*Math.PI, 1]);
+partition(hierarchy);
+
+const arcGen = (xSc, innerFn, outerFn) => d3.arc()
+  .startAngle(d => Math.max(0, Math.min(2*Math.PI, xSc(d.x0))))
+  .endAngle(d => Math.max(0, Math.min(2*Math.PI, xSc(d.x1))))
+  .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.012))
+  .padRadius(RI)
+  .innerRadius(innerFn)
+  .outerRadius(outerFn)
+  .cornerRadius(2);
+
+const wrap = document.getElementById("chart-wrap");
+const svg = d3.select(wrap).append("svg")
+  .attr("viewBox", `0 0 ${SIZE} ${SIZE}`)
+  .attr("role","img")
+  .attr("aria-label","Sunburst chart of CNI session themes 2015 to 2019");
+const g = svg.append("g").attr("transform", `translate(${CX},${CY})`);
+
+const tooltip = document.getElementById("tooltip");
+const detailPanel = document.getElementById("detail-panel");
+const breadcrumb = document.getElementById("breadcrumb");
+
+let currentRoot = hierarchy;
+let breadcrumbStack = [];
+
+function getInnerR(d, root) {
+  const rd = d.depth - root.depth;
+  if (d === root) return 0;
+  if (rd <= 0) return 0;
+  if (rd === 1) return RI;
+  if (rd === 2) return R1;
+  return R2;
+}
+function getOuterR(d, root) {
+  if (d === root) return RI;
+  const rd = d.depth - root.depth;
+  if (rd <= 0) return 0;
+  if (rd === 1) return R1;
+  if (rd === 2) return R2;
+  return R3;
+}
+
+function updateBreadcrumb() {
+  breadcrumb.innerHTML = "";
+  const allItems = [{ label: "All themes", depth: -1 }, ...breadcrumbStack];
+  allItems.forEach((item, i) => {
+    const span = document.createElement("span");
+    span.className = "bc-item" + (i === allItems.length - 1 ? " active" : "");
+    span.textContent = item.label;
+    if (i < allItems.length - 1) {
+      span.addEventListener("click", () => {
+        breadcrumbStack = breadcrumbStack.slice(0, i);
+        const target = i === 0 ? hierarchy : item.node;
+        render(target);
+      });
+    }
+    breadcrumb.appendChild(span);
+    if (i < allItems.length - 1) {
+      const sep = document.createElement("span");
+      sep.className = "bc-sep";
+      sep.textContent = "›";
+      breadcrumb.appendChild(sep);
+    }
+  });
+}
+
+function showDetail(d) {
+  if (!d || d === currentRoot) {
+    detailPanel.innerHTML = `<div class="dp-label">Hover or click a segment</div><div class="dp-name" style="color:var(--text-3);font-style:italic;font-size:0.9rem;">Nothing selected</div>`;
+    return;
+  }
+  const ci = d.data.catIdx;
+  const accentColor = ci !== undefined ? getCatStroke(ci) : "var(--text-2)";
+  let html = `<div class="dp-label" style="color:${accentColor}">${d.depth === 1 ? "Category" : d.depth === 2 ? "Theme" : "Meeting"}</div>`;
+  html += `<div class="dp-name">${d.data.name}</div>`;
+  html += `<div class="dp-count">${d.value} session${d.value !== 1 ? "s" : ""}</div>`;
+
+  if (d.depth === 2 || d.depth === 3) {
+    const meetings = d.depth === 2
+      ? MEETINGS.map(m => ({ label: MEETING_LABELS[m], full: MEETING_FULL[m], v: (YEAR_SESSIONS[d.data.name]||{})[m]||0 }))
+      : [{ label: d.data.name, full: MEETING_FULL[d.data.meeting], v: d.data.value }];
+    const max = Math.max(...meetings.map(x => x.v), 1);
+    html += `<div class="dp-bar-wrap">`;
+    meetings.filter(x => x.v > 0).forEach(m => {
+      const pct = Math.round(m.v / max * 100);
+      html += `<div class="dp-bar-row">
+        <span class="dp-bar-label">${m.label}</span>
+        <div class="dp-bar-bg"><div class="dp-bar-fill" style="width:${pct}%;background:${accentColor}"></div></div>
+        <span class="dp-bar-val">${m.v}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  detailPanel.innerHTML = html;
+}
+
+function render(root) {
+  currentRoot = root;
+  const xScale = d3.scaleLinear().domain([root.x0, root.x1]).range([0, 2*Math.PI]);
+  const arc = arcGen(
+    xScale,
+    d => getInnerR(d, root),
+    d => getOuterR(d, root)
+  );
+
+  g.selectAll("*").remove();
+
+  const nodes = hierarchy.descendants();
+
+  /* arcs */
+  g.selectAll("path")
+    .data(nodes)
+    .join("path")
+    .attr("d", d => {
+      try { return arc(d); } catch(e) { return null; }
+    })
+    .attr("fill", d => {
+      if (d === root) return BG_FILL;
+      if (d.depth <= root.depth) return "none";
+      const ci = d.data.catIdx;
+      if (ci === undefined) return BG_FILL;
+      return getCatFill(ci, d.depth - root.depth);
+    })
+    .attr("stroke", STROKE)
+    .attr("stroke-width", 0.8)
+    .attr("opacity", d => {
+      if (d === root) return 1;
+      if (d.depth <= root.depth) return 0;
+      return 1;
+    })
+    .attr("pointer-events", d => (d.depth <= root.depth && d !== root) ? "none" : "all")
+    .style("cursor", d => {
+      if (d === root) return root !== hierarchy ? "pointer" : "default";
+      if (d.depth <= root.depth) return "default";
+      return d.children ? "pointer" : "default";
+    })
+    .on("mouseenter", function(event, d) {
+      if (d.depth <= root.depth && d !== root) return;
+      d3.select(this).attr("opacity", d === root ? 1 : 0.72);
+      if (d === root) return;
+      const ci = d.data.catIdx;
+      const catName = ci !== undefined ? CATS[ci].name : "";
+      let ttHtml = `<strong>${d.data.name}</strong>`;
+      if (d.depth > 1) ttHtml += `<br><span class="tt-count" style="color:${ci!==undefined?getCatStroke(ci):"inherit"}">${catName}</span>`;
+      ttHtml += `<br><span class="tt-count">${d.value} session${d.value!==1?"s":""}</span>`;
+      tooltip.innerHTML = ttHtml;
+      tooltip.style.opacity = "1";
+      showDetail(d);
+    })
+    .on("mousemove", function(event) {
+      tooltip.style.left = (event.clientX + 14) + "px";
+      tooltip.style.top = (event.clientY - 10) + "px";
+    })
+    .on("mouseleave", function(event, d) {
+      d3.select(this).attr("opacity", (d.depth <= root.depth && d !== root) ? 0 : 1);
+      tooltip.style.opacity = "0";
+      showDetail(null);
+    })
+    .on("click", function(event, d) {
+      event.stopPropagation();
+      if (d === root) {
+        if (root !== hierarchy) {
+          breadcrumbStack.pop();
+          const parent = breadcrumbStack.length ? breadcrumbStack[breadcrumbStack.length-1].node : hierarchy;
+          render(parent);
+          updateBreadcrumb();
+        }
+        return;
+      }
+      if (d.depth <= root.depth) return;
+      if (d.children && d.children.length) {
+        breadcrumbStack.push({ label: d.data.name, node: d });
+        render(d);
+        updateBreadcrumb();
+      }
+    });
+
+  /* labels */
+  const labelNodes = nodes.filter(d => {
+    if (d === root) return false;
+    if (d.depth <= root.depth) return false;
+    const span = Math.abs(xScale(d.x1) - xScale(d.x0));
+    const rd = d.depth - root.depth;
+    if (rd === 1) return span > 0.13;
+    if (rd === 2) return span > 0.07;
+    return span > 0.045;
+  });
+
+  const textGroups = g.selectAll("g.label")
+    .data(labelNodes)
+    .join("g")
+    .attr("class", "label")
+    .attr("pointer-events", "none")
+    .attr("transform", d => {
+      const mid = (xScale(d.x0) + xScale(d.x1)) / 2;
+      const rd = d.depth - root.depth;
+      const r = rd === 1 ? (RI + R1) / 2 : rd === 2 ? (R1 + R2) / 2 : (R2 + R3) / 2;
+      const angleDeg = mid * 180 / Math.PI - 90;
+      const flip = angleDeg > 90 ? 180 : 0;
+      return `rotate(${angleDeg}) translate(${r},0) rotate(${flip})`;
+    });
+
+  textGroups.each(function(d) {
+    const el = d3.select(this);
+    const ci = d.data.catIdx;
+    const color = ci !== undefined ? getCatText(ci) : TEXT2;
+    const rd = d.depth - root.depth;
+    const fs = rd === 1 ? 11.5 : rd === 2 ? 10.5 : 9;
+
+    const name = d.data.name;
+    const words = name.split(" ");
+    const maxW = rd === 1 ? 80 : rd === 2 ? 60 : 44;
+
+    const lines = [];
+    let line = "";
+    const tmpSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const tmpText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    tmpText.style.fontSize = fs + "px";
+    tmpSvg.appendChild(tmpText);
+    document.body.appendChild(tmpSvg);
+    words.forEach(w => {
+      const test = line ? line + " " + w : w;
+      tmpText.textContent = test;
+      if (tmpText.getComputedTextLength() > maxW && line) { lines.push(line); line = w; }
+      else { line = test; }
+    });
+    lines.push(line);
+    document.body.removeChild(tmpSvg);
+
+    const lh = fs + 2;
+    const totalH = lines.length * lh;
+    lines.forEach((ln, i) => {
+      el.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .attr("font-family", "'DM Sans', sans-serif")
+        .attr("font-size", fs)
+        .attr("fill", color)
+        .attr("y", -totalH/2 + i*lh + lh/2)
+        .text(ln);
+    });
+    if (rd === 3) {
+      el.append("text")
+        .attr("text-anchor","middle")
+        .attr("dominant-baseline","middle")
+        .attr("font-family","'DM Sans', sans-serif")
+        .attr("font-size","9")
+        .attr("fill", color)
+        .attr("y", totalH/2 + 6)
+        .text(d.value);
+    }
+  });
+
+  /* centre circle */
+  g.append("circle")
+    .attr("r", RI)
+    .attr("fill", BG_FILL)
+    .attr("stroke", STROKE)
+    .attr("stroke-width", 0.8)
+    .style("cursor", root !== hierarchy ? "pointer" : "default")
+    .on("click", () => {
+      if (root !== hierarchy) {
+        breadcrumbStack.pop();
+        const parent = breadcrumbStack.length ? breadcrumbStack[breadcrumbStack.length-1].node : hierarchy;
+        render(parent);
+        updateBreadcrumb();
+      }
+    });
+
+  /* centre text */
+  const cg = g.append("g").attr("pointer-events","none");
+  if (root === hierarchy) {
+    cg.append("text").attr("text-anchor","middle").attr("y","-8")
+      .attr("font-family","'DM Serif Display', serif").attr("font-size","13").attr("fill",TEXT1).text("CNI");
+    cg.append("text").attr("text-anchor","middle").attr("y","10")
+      .attr("font-family","'DM Sans', sans-serif").attr("font-size","10").attr("fill",TEXT2).text("2015–2019");
+  } else {
+    const lines = root.data.name.split(" ");
+    const mid = Math.ceil(lines.length / 2);
+    const l1 = lines.slice(0, mid).join(" "), l2 = lines.slice(mid).join(" ");
+    cg.append("text").attr("text-anchor","middle").attr("y", l2 ? "-10" : "-4")
+      .attr("font-family","'DM Serif Display', serif").attr("font-size","11").attr("fill",TEXT1).text(l1);
+    if (l2) {
+      cg.append("text").attr("text-anchor","middle").attr("y","7")
+        .attr("font-family","'DM Serif Display', serif").attr("font-size","11").attr("fill",TEXT1).text(l2);
+    }
+    cg.append("text").attr("text-anchor","middle").attr("y", l2 ? "22" : "14")
+      .attr("font-family","'DM Sans', sans-serif").attr("font-size","9.5").attr("fill",TEXT2)
+      .text(root.value + " sessions");
+  }
+}
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  breadcrumbStack = [];
+  render(hierarchy);
+  updateBreadcrumb();
+});
+
+updateBreadcrumb();
+render(hierarchy);
+</script>
+</body>
+</html>
